@@ -5,5 +5,7 @@ docker run \
     --user 0 \
     -v $(pwd)/cache:/opt/sonar-scanner/.sonar/cache \
     -v $(pwd)/input/test-java-one-file:/usr/src \
-    sonarsource/sonar-scanner-cli \
-    -X
+    -e SONAR_HOST_URL="http://localhost:9000" \
+    -v $(pwd)/scannerwork:/tmp/.scannerwork \
+    --network=host \
+    sonarsource/sonar-scanner-cli
