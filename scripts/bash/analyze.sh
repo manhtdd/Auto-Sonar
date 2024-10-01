@@ -10,7 +10,7 @@ echo
 docker run \
     --rm \
     --user 0 \
-    -v $(pwd)/cache:/opt/sonar-scanner/.sonar/cache \
+    -v $(pwd)/sonar-cache:/opt/sonar-scanner/.sonar/cache \
     -v $(pwd)/$FILE_PATH:/usr/src \
     -e SONAR_HOST_URL="http://localhost:9000" \
     -v $(pwd)/$FILE_PATH/scannerwork:/tmp/.scannerwork \
