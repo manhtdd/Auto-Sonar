@@ -113,7 +113,7 @@ def get_scanner_output(scanner_path:str) -> dict:
     return config_data
 
 if __name__ == "__main__":
-    file_path = "input/test-java-one-file"
+    file_path = "input/test-python-one-file-3rd-library"
     logging.info(file_path)
     scanner_path = f"{file_path}/scannerwork"
     logging.info(scanner_path)

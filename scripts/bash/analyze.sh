@@ -9,6 +9,20 @@ if [ ! -d "$FILE_PATH" ]; then
     exit 1
 fi
 
+# Check for sonar-project.properties in the directory
+if [ ! -f "$FILE_PATH/sonar-project.properties" ]; then
+    echo "ERROR: sonar-project.properties file not found in $FILE_PATH."
+    echo "RUNNING SCRIPT TO CREATE sonar-project.properties"
+    echo "COMMAND:"
+    echo "      python scripts/python/setup_project.py $FILE_PATH"
+    python scripts/python/setup_project.py $FILE_PATH
+    echo
+    if [ ! -f "$FILE_PATH/sonar-project.properties" ]; then
+        echo "FAILED TO GENERATE sonar-project.properties"
+        exit 1
+    fi
+fi
+
 # Check for .java or .py files in the directory
 num_java_files=$(find "$FILE_PATH" -maxdepth 1 -type f -name "*.java" | wc -l)
 num_py_files=$(find "$FILE_PATH" -maxdepth 1 -type f -name "*.py" | wc -l)
@@ -45,6 +59,8 @@ if ! curl --output /dev/null --silent --head --fail "$SONAR_HOST_URL"; then
     echo "ERROR: $SONAR_HOST_URL is not accessible. Please ensure that the SonarQube server is running."
     echo "Try running this command:"
     echo "      docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:latest"  
+    echo "Or if your sonarqube container is already existed:"
+    echo "      docker container start sonarqube"
     exit 1
 else
     echo "SonarQube server is accessible at $SONAR_HOST_URL."
