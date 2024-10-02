@@ -2,7 +2,7 @@ import os
 import logging
 import json
 from typing import Optional
-from .read_output import get_scanner_output
+from .api import main as read_analyze
 from .setup_project import main as setup_project
 import subprocess
 import sys
@@ -65,7 +65,6 @@ def check_java_class_file(path):
             logging.error("ERROR: javac failed. Please check if you have JDK installed.")
             return False
         logging.info("BUILD SUCCESS")
-        logging.info()
     return True
 
 def check_sonar_accessibility():
@@ -100,7 +99,7 @@ def run_sonar_scanner(path):
 def count_files(path, extension):
     return len([f for f in os.listdir(path) if f.endswith(extension)])
 
-def run_sonar(codepath: str, savepath: Optional[str] = None) -> dict:
+def run_sonar(codepath: str, savepath: Optional[str] = None) -> None:
     logging.info(codepath)
     logging.info(savepath)
     
@@ -128,16 +127,22 @@ def run_sonar(codepath: str, savepath: Optional[str] = None) -> dict:
     
     run_sonar_scanner(dir_path)
     
+    issues_api_response, hotspots_api_response = read_analyze(os.path.dirname(savepath))
+    
+    output = {
+        "issues": issues_api_response,
+        "hotspots": hotspots_api_response
+    }
+    
+    with open(savepath, 'w') as json_file:
+        json.dump(output, json_file, indent=4)
+        
     if not os.path.exists(savepath):
         logging.error(f"The file '{savepath}' does not exist.")
-        return {}
-    
-    return get_scanner_output(savepath)
 
 if __name__ == "__main__":
-    codepath = "input/test-python-one-file/test.py"
-    savepath = "input/test-python-one-file/test.json"
+    codepath = "input/test_sonar_security/VulnerableApp.java"
+    savepath = "input/test_sonar_security/VulnerableApp.json"
     # codepath = "input/Main.java"
     # savepath = "input/main.json"
     output = run_sonar(codepath, savepath)
-    logging.info(json.dumps(output, indent=4))

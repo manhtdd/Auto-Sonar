@@ -3,3 +3,4 @@ input
 scannerwork
 logs
 auto_sonar.egg-info
+__pycache__
