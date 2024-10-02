@@ -49,6 +49,11 @@ To install Docker, follow the instructions for your operating system [here](http
    - Hit `Generate` button
 
 ## Installation
+Clone this repository:
+```
+git clone https://github.com/manhtdd/Auto-Sonar.git auto_sonar
+cd auto_sonar
+```
 
 To install the `auto_sonar` package, run:
 
