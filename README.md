@@ -74,11 +74,12 @@ Here’s an example of how to use `auto_sonar` to scan a Python file:
 from auto_sonar import run_sonar
 import json
 
-codepath = "input/test.py"  # Path to the code to be analyzed
-savepath = "input/test.sarif"  # Path where the analysis results will be saved
-
+codepath = "input/test_sonar_security/VulnerableApp.java" # Path to the code to be analyzed
+savepath = "input/test_sonar_security/VulnerableApp.json" # Path where the analysis results will be saved
+sonar_url_host = "http://localhost:9000"
+token = "YOUR_TOKEN"
 # Run SonarQube analysis
-output = run_sonar(codepath, savepath)
+output = run_sonar(sonar_url_host, token, codepath, savepath)
 
 # Print the output in a readable JSON format
 print(json.dumps(output, indent=4))
