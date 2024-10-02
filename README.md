@@ -42,6 +42,12 @@ To install Docker, follow the instructions for your operating system [here](http
 
 4. You can access the SonarQube dashboard at `http://localhost:9000`.
 
+5. Get your SonarQube Token
+   - Visit SonarQube dashboard at `http://localhost:9000`
+   - You can generate new tokens at `User` > `My Account` > `Security`
+   - Token type: `User Token`
+   - Hit `Generate` button
+
 ## Installation
 
 To install the `auto_sonar` package, run:
