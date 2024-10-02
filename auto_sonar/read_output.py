@@ -5,7 +5,7 @@ import pandas
 import requests
 from requests.auth import HTTPBasicAuth
 
-SWE_MAPPING_PATH = "scripts/python"
+SWE_MAPPING_PATH = "."
 TOKEN="sqa_0aa5afee537a0850e83e21db58acb1d119b61f1c"
 
 # Setup logging to both file and console
