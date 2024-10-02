@@ -146,3 +146,4 @@ if __name__ == "__main__":
     # codepath = "input/Main.java"
     # savepath = "input/main.json"
     output = run_sonar(codepath, savepath)
+    logging.info(json.dumps(output, indent=4))

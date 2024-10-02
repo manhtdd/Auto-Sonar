@@ -1,18 +1,35 @@
-Host SonarQube
-
+1. Setup SonarQube & SonarScanner
 ```
-docker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:latest
+docker pull sonarqube:latest
+docker pull sonarsource/sonar-scanner-cli:latest
+```
+If successfull:
+```
+sonarsource/sonar-scanner-cli   latest          5eb01c509ae7   8 days ago     887MB
+sonarqube                       latest          2433ac783140   2 months ago   1.07GB
 ```
 
-Setup `sonar-project.properties`
-
+2. Install `auto_sonar`
 ```
-sonar.projectKey=my:project
-sonar.projectName=My project
-sonar.projectVersion=1.0
-sonar.sources=Main.java
-sonar.java.binaries=Main.class
-sonar.sourceEncoding=UTF-8
-sonar.token=sqa_0aa5afee537a0850e83e21db58acb1d119b61f1c
-sonar.scm.disabled=true
+pip install -e .
+```
+
+You should be able to `import auto_sonar` now
+```
+$ python
+Python 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import auto_sonar
+>>> 
+```
+
+3. Usage
+An example code:
+```
+from auto_sonar import run_sonar
+
+codepath = "input/test.py"
+savepath = "input/test.sarif"
+output = run_sonar(codepath, savepath)
+print(json.dumps(output, indent=4))
 ```
