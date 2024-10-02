@@ -5,6 +5,7 @@ from typing import Optional
 from .api import main as read_analyze
 from .setup_project import main as setup_project
 import subprocess
+import time
 
 # Setup logging to both file and console
 LOGS_DIR = "logs"
@@ -20,6 +21,28 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+def command_with_timeout(cmd:str, cwd:str=".", timeout=60):
+    """
+    Execute a command with a specified timeout.
+    :param cmd: Command to be executed.
+    :param timeout: Time (in seconds) after which the command will be terminated.
+    :return: Standard output and standard error of the executed command.
+    """
+    logging.info(f"Run:\n\t{cmd}\nAt: {cwd}")
+    p = subprocess.Popen(cmd, cwd=cwd, universal_newlines=True)
+    start_time = time.time()
+
+    while True:
+        if p.poll() is not None:
+            break
+        elapsed_time = time.time() - start_time
+        if timeout and elapsed_time > timeout:
+            p.terminate()
+            return 'TIMEOUT', 'TIMEOUT'
+        time.sleep(1)
+
+    return p
 
 def check_directory(path):
     if not os.path.isdir(path):
@@ -66,7 +89,7 @@ def check_java_class_file(path):
 
 def check_sonar_accessibility(sonar_url_host):
     logging.info(f"Checking if {sonar_url_host} is accessible...")
-    result = subprocess.run(["curl", "--output", "/dev/null", "--silent", "--head", "--fail", sonar_url_host])
+    result = command_with_timeout(["curl", "--output", "/dev/null", "--silent", "--head", "--fail", sonar_url_host])
 
     if result.returncode != 0:
         logging.error(f"ERROR: {sonar_url_host} is not accessible. Please ensure that the SonarQube server is running.")
@@ -82,7 +105,7 @@ def run_sonar_scanner(path, sonar_url_host):
     logging.info(f"COMMAND:\n\tdocker run --rm --user 0 -v {os.getcwd()}/{path}:/usr/src -e SONAR_HOST_URL=\"{sonar_url_host}\" "
           f"-v {os.getcwd()}/{path}/scannerwork:/tmp/.scannerwork --network=host sonarsource/sonar-scanner-cli")
     
-    subprocess.run([
+    command_with_timeout([
         "docker", "run", "--rm", "--user", "0",
         "-v", f"{os.getcwd()}/{path}:/usr/src",
         "-e", f"SONAR_HOST_URL={sonar_url_host}",

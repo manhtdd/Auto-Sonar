@@ -93,3 +93,6 @@ print(json.dumps(output, indent=4))
 ### Arguments:
 - `codepath`: Path to the file or directory you want to analyze.
 - `savepath`: Path where the scan results will be saved (SARIF format).
+
+### IMPORTANT:
+- It is recommended to put the file (e.g. `VulnerableApp.Java`) inside a folder (e.g. `test_sonar_security`) since SonarQube's temp files will be generated inside this folder (e.g. `test_sonar_security`)
