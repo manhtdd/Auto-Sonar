@@ -5,9 +5,6 @@ import requests
 from requests.auth import HTTPBasicAuth
 from typing import Tuple
 
-TOKEN="squ_ab5b3031f687c7e5dafe85f1350ea2c4519b9290"
-SONAR_HOST_URL = "http://localhost:9000"
-
 # Setup logging to both file and console
 LOGS_DIR = "logs"
 if not os.path.exists(LOGS_DIR):
@@ -23,11 +20,11 @@ logging.basicConfig(
     ]
 )
 
-def call_sonar_api(api):
+def call_sonar_api(api, token):
     logging.info(api)
     # Make a GET request to the ceTaskUrl
     try:
-        response = requests.get(api, auth=HTTPBasicAuth(TOKEN, ""))
+        response = requests.get(api, auth=HTTPBasicAuth(token, ""))
         response.raise_for_status()  # Raise an error for bad status codes
         return response.json()  # Parse the JSON response
     except requests.exceptions.RequestException as e:
@@ -51,7 +48,7 @@ def get_scanner_output(scanner_path:str) -> dict:
                 
     return config_data
 
-def main(file_path:str)-> Tuple[dict, dict]:
+def main(file_path:str, sonar_url_host:str, token:str)-> Tuple[dict, dict]:
     logging.info(file_path)
     scanner_path = f"{file_path}/scannerwork"
     logging.info(scanner_path)
@@ -62,9 +59,9 @@ def main(file_path:str)-> Tuple[dict, dict]:
     project_key = json_scanner_output.get('projectKey')
     if project_key:
         # Call the API and get the result
-        issues_api_response = call_sonar_api(f"{SONAR_HOST_URL}/api/issues/search?componentKeys={project_key}")
+        issues_api_response = call_sonar_api(f"{sonar_url_host}/api/issues/search?componentKeys={project_key}", token=token)
         logging.info(json.dumps(issues_api_response, indent=4))
-        hotspots_api_response = call_sonar_api(f"{SONAR_HOST_URL}/api/hotspots/search?project={project_key}")
+        hotspots_api_response = call_sonar_api(f"{sonar_url_host}/api/hotspots/search?project={project_key}", token=token)
         logging.info(json.dumps(hotspots_api_response, indent=4))
     else:
         logging.info("projectKey not found in the configuration file.")

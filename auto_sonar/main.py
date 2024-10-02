@@ -6,8 +6,6 @@ from .api import main as read_analyze
 from .setup_project import main as setup_project
 import subprocess
 
-SONAR_HOST_URL = "http://localhost:9000"
-
 # Setup logging to both file and console
 LOGS_DIR = "logs"
 if not os.path.exists(LOGS_DIR):
@@ -66,28 +64,28 @@ def check_java_class_file(path):
         logging.info("BUILD SUCCESS")
     return True
 
-def check_sonar_accessibility():
-    logging.info(f"Checking if {SONAR_HOST_URL} is accessible...")
-    result = subprocess.run(["curl", "--output", "/dev/null", "--silent", "--head", "--fail", SONAR_HOST_URL])
+def check_sonar_accessibility(sonar_url_host):
+    logging.info(f"Checking if {sonar_url_host} is accessible...")
+    result = subprocess.run(["curl", "--output", "/dev/null", "--silent", "--head", "--fail", sonar_url_host])
 
     if result.returncode != 0:
-        logging.error(f"ERROR: {SONAR_HOST_URL} is not accessible. Please ensure that the SonarQube server is running.")
+        logging.error(f"ERROR: {sonar_url_host} is not accessible. Please ensure that the SonarQube server is running.")
         logging.error("Try running this command:\n\tdocker run -d --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:latest")
         logging.error("Or if your sonarqube container already exists:\n\tdocker container start sonarqube")
         return False
     else:
-        logging.info(f"SonarQube server is accessible at {SONAR_HOST_URL}.")
+        logging.info(f"SonarQube server is accessible at {sonar_url_host}.")
 
     return True
         
-def run_sonar_scanner(path):
-    logging.info(f"COMMAND:\n\tdocker run --rm --user 0 -v {os.getcwd()}/{path}:/usr/src -e SONAR_HOST_URL=\"{SONAR_HOST_URL}\" "
+def run_sonar_scanner(path, sonar_url_host):
+    logging.info(f"COMMAND:\n\tdocker run --rm --user 0 -v {os.getcwd()}/{path}:/usr/src -e SONAR_HOST_URL=\"{sonar_url_host}\" "
           f"-v {os.getcwd()}/{path}/scannerwork:/tmp/.scannerwork --network=host sonarsource/sonar-scanner-cli")
     
     subprocess.run([
         "docker", "run", "--rm", "--user", "0",
         "-v", f"{os.getcwd()}/{path}:/usr/src",
-        "-e", f"SONAR_HOST_URL={SONAR_HOST_URL}",
+        "-e", f"SONAR_HOST_URL={sonar_url_host}",
         "-v", f"{os.getcwd()}/{path}/scannerwork:/tmp/.scannerwork",
         "--network=host",
         "sonarsource/sonar-scanner-cli"
@@ -98,7 +96,7 @@ def run_sonar_scanner(path):
 def count_files(path, extension):
     return len([f for f in os.listdir(path) if f.endswith(extension)])
 
-def run_sonar(codepath: str, savepath: Optional[str] = None) -> None:
+def run_sonar(sonar_url_host:str, token:str, codepath: str, savepath: Optional[str] = None) -> None:
     logging.info(codepath)
     logging.info(savepath)
     
@@ -121,12 +119,12 @@ def run_sonar(codepath: str, savepath: Optional[str] = None) -> None:
         if not check_java_class_file(dir_path):
             return {}
         
-    if not check_sonar_accessibility():
+    if not check_sonar_accessibility(sonar_url_host):
         return {}
     
-    run_sonar_scanner(dir_path)
+    run_sonar_scanner(dir_path, sonar_url_host)
     
-    issues_api_response, hotspots_api_response = read_analyze(os.path.dirname(savepath))
+    issues_api_response, hotspots_api_response = read_analyze(os.path.dirname(savepath), sonar_url_host, token)
     
     output = {
         "issues": issues_api_response,
@@ -135,14 +133,17 @@ def run_sonar(codepath: str, savepath: Optional[str] = None) -> None:
     
     with open(savepath, 'w') as json_file:
         json.dump(output, json_file, indent=4)
+    logging.info(f"Output of SonarQube is saved at {savepath}")
         
     if not os.path.exists(savepath):
         logging.error(f"The file '{savepath}' does not exist.")
+        
+    return output
 
 if __name__ == "__main__":
     codepath = "input/test_sonar_security/VulnerableApp.java"
     savepath = "input/test_sonar_security/VulnerableApp.json"
-    # codepath = "input/Main.java"
-    # savepath = "input/main.json"
-    output = run_sonar(codepath, savepath)
+    sonar_url_host = "http://localhost:9000"
+    token = "squ_ab5b3031f687c7e5dafe85f1350ea2c4519b9290"
+    output = run_sonar(sonar_url_host, token, codepath, savepath)
     logging.info(json.dumps(output, indent=4))
