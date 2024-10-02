@@ -5,7 +5,6 @@ from typing import Optional
 from .api import main as read_analyze
 from .setup_project import main as setup_project
 import subprocess
-import sys
 
 SONAR_HOST_URL = "http://localhost:9000"
 
